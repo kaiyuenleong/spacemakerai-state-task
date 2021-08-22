@@ -23,6 +23,11 @@ body {
   flex-direction: column;
 }
 
+.justify_align_center {
+  justify-content: center;
+  align-items: center;
+}
+
 .justify_center {
   justify-content: center;
 }
