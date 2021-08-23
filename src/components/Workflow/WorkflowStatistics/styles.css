@@ -1,0 +1,48 @@
+.workflow_statistics {
+  flex: 1 0 auto;
+  text-align: center;
+}
+
+.workflow_statistics > div {
+  margin-bottom: 40px;
+}
+
+.workflow_statistic {
+  margin-top: 20px;
+}
+
+.workflow_statistic > h4, .workflow_statistic > p {
+  margin: 0;
+}
+
+.workflow_statistic > p {
+  font-size: 0.85em;
+}
+
+.workflow_tool_button {
+  width: 50%;
+  height: 40px;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid rgba(160, 160, 180, 0.75);
+}
+
+.workflow_tool_button > svg {
+  max-height: 100%;
+  margin-right: 20px;
+  fill: rgba(63, 191, 63, 0.4);
+}
+
+.workflow_tool_button.disabled {
+  cursor: default;
+  color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(160, 160, 180, 0.75);
+  border-color: white;
+}
+
+.workflow_tool_button.disabled > svg {
+  fill: rgba(160, 160, 180, 0.75);
+}

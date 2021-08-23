@@ -1,0 +1,1 @@
+type UpdateAction = "UpdateSelection" | "UpdatePolygons";
