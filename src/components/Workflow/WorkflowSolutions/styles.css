@@ -1,6 +1,7 @@
 .workflow_solutions {
   flex: 1 0 auto;
   text-align: center;
+  overflow-y: scroll;
 }
 
 .workflow_solution {

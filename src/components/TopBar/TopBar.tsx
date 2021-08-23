@@ -1,11 +1,11 @@
-import logo from '../../static/logo_white.png';
+import logo from 'static/logo_white.png';
 import './styles.css';
 
 interface TopBarProps {}
 
 /**
  * Component for horizontal bar at the top of the page
- * @version 1.0.0
+ * @version 1.0.1
  */
 function TopBar(props: TopBarProps) {
   return (

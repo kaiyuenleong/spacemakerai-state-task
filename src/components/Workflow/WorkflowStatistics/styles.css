@@ -11,12 +11,11 @@
   margin-top: 20px;
 }
 
-.workflow_statistic > h4 {
+.workflow_statistic > h4, .workflow_statistic > p {
   margin: 0;
 }
 
 .workflow_statistic > p {
-  margin: 0;
   font-size: 0.85em;
 }
 

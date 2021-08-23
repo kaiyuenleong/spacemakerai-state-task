@@ -5,6 +5,11 @@ interface WorkflowSolutionsProps {
   setSelectedSolution: (solutionIndex: number) => void;
 }
 
+/**
+ * Component for displaying a list of solutions
+ * that can be selected from
+ * @version 1.0.0
+ */
 function WorkflowSolutions(props: WorkflowSolutionsProps) {
   return (
     <div className="workflow_solutions flex flex_col">

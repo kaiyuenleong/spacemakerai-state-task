@@ -1,3 +1,4 @@
+import React from 'react';
 import { ReactComponent as UnionIcon } from 'static/unite.svg';
 import { ReactComponent as IntersectIcon } from 'static/intersection.svg';
 import { calculateArea, intersectFeatures, unionFeatures } from 'utils';
@@ -10,18 +11,22 @@ interface WorkflowStatisticsProps {
 
 interface WorkflowStatisticData {
   label: string;
-  value: number | string;
+  value: string;
 }
 
 /**
  * Component for displaying area data for the selected solution
- * @version 1.0.0
+ * @version 1.0.1
  */
 function WorkflowStatistics(props: WorkflowStatisticsProps) {
+  // Array of features in the solution being displayed
   const solutionFeatures: GeoJSON.Feature[] = props.selectedSolution ? props.selectedSolution.features : [];
+
+  // Array of selected features in the solution being displayed
   const selectedSolutionFeatures: GeoJSON.Feature[] = 
     solutionFeatures.filter((feature: GeoJSON.Feature) => feature.properties && feature.properties['selected']);
 
+  // Area data entries to be mapped in the component
   const areaData: WorkflowStatisticData[] = [
     {
       label: "Solution Area",
@@ -33,7 +38,13 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
     }
   ];
 
-  const onUnion = () => {
+  /**
+   * A wrapper callback function for the 'Union' button
+   * that sends the selected features for a single united feature
+   * to be created, then passes the new union feature
+   * to update the solution state
+   */
+  const onUnion = (): void => {
     if (selectedSolutionFeatures.length !== 2) return;
     const unitedFeature = unionFeatures(selectedSolutionFeatures);
     if (unitedFeature) {
@@ -45,7 +56,13 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
     }
   } 
 
-  const onIntersect = () => {
+  /**
+   * A wrapper callback function for the 'Intersect' button
+   * that sends the selected features for a single intersecting feature
+   * to be created, then passes the new intersecting feature
+   * to update the solution state
+   */
+  const onIntersect = (): void => {
     if (selectedSolutionFeatures.length !== 2) return;
     const intersectedFeature = intersectFeatures(selectedSolutionFeatures);
     if (intersectedFeature) {
@@ -57,6 +74,8 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
     }
   }
 
+  // Set whether tool buttons are disabled based on the
+  // number of selected polygon features
   const toolsDisabled = selectedSolutionFeatures.length !== 2;
 
   return (
@@ -68,7 +87,8 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
           return (
             <div
               key={key}
-              className="workflow_statistic">
+              className="workflow_statistic"
+            >
               <h4>{area.label}</h4>
               <p>{area.value} m<sup>2</sup></p>
             </div>
@@ -77,23 +97,21 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
       </div>
       <div>
         <h3>Solution Tools</h3>
-        <div className="workflow_tool flex flex_col align_center">
-          <button
-            className={`workflow_tool_button flex justify_align_center ${toolsDisabled ? "disabled" : ""}`}
-            onClick={onUnion}
+        <div className="flex flex_col align_center">
+          <WorkflowTool
+            label={"Union"}
             disabled={toolsDisabled}
+            onClickCallback={onUnion}
           >
             <UnionIcon />
-            Union
-          </button>
-          <button
-            className={`workflow_tool_button flex justify_align_center ${toolsDisabled ? "disabled" : ""}`}
-            onClick={onIntersect}
+          </WorkflowTool>
+          <WorkflowTool
+            label={"Intersect"}
             disabled={toolsDisabled}
+            onClickCallback={onIntersect}
           >
             <IntersectIcon />
-            Intersect
-          </button>
+          </WorkflowTool>
         </div>
       </div>
     </div>
@@ -101,3 +119,27 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
 }
 
 export { WorkflowStatistics };
+
+interface WorkflowToolProps {
+  label: string;
+  disabled: boolean;
+  onClickCallback: () => void;
+  children: React.ReactNode;
+}
+
+/**
+ * A workflow tool button component
+ * @version 1.0.0
+ */
+function WorkflowTool(props: WorkflowToolProps) {
+  return (
+    <button
+      className={`workflow_tool_button flex justify_align_center ${props.disabled ? "disabled" : ""}`}
+      onClick={props.onClickCallback}
+      disabled={props.disabled}
+    >
+      {props.children}
+      {props.label}
+    </button>
+  )
+}
