@@ -1,12 +1,12 @@
 import React from 'react';
 import { ReactComponent as UnionIcon } from 'static/unite.svg';
 import { ReactComponent as IntersectIcon } from 'static/intersection.svg';
-import { calculateArea, intersectFeatures, unionFeatures } from 'utils';
+import { calculateArea, GeoJSONFeatureInterface } from 'utils';
 import './styles.css';
 
 interface WorkflowStatisticsProps {
   selectedSolution: ExtendedFeatureCollection | undefined;
-  updateSelectedSolution: (featureIDs: string[], action: UpdateAction, updatedFeature: GeoJSON.Feature) => void;
+  updateSelectedSolution: (featureIDs: string[], updatedFeature: GeoJSON.Feature) => void;
 }
 
 interface WorkflowStatisticData {
@@ -46,11 +46,10 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
    */
   const onUnion = (): void => {
     if (selectedSolutionFeatures.length !== 2) return;
-    const unitedFeature = unionFeatures(selectedSolutionFeatures);
+    const unitedFeature = GeoJSONFeatureInterface.unionFeatures(selectedSolutionFeatures);
     if (unitedFeature) {
       props.updateSelectedSolution(
         [selectedSolutionFeatures[0].id as string, selectedSolutionFeatures[1].id as string],
-        "UpdatePolygons",
         unitedFeature,
       );
     }
@@ -64,11 +63,10 @@ function WorkflowStatistics(props: WorkflowStatisticsProps) {
    */
   const onIntersect = (): void => {
     if (selectedSolutionFeatures.length !== 2) return;
-    const intersectedFeature = intersectFeatures(selectedSolutionFeatures);
+    const intersectedFeature = GeoJSONFeatureInterface.intersectFeatures(selectedSolutionFeatures);
     if (intersectedFeature) {
       props.updateSelectedSolution(
         [selectedSolutionFeatures[0].id as string, selectedSolutionFeatures[1].id as string],
-        "UpdatePolygons",
         intersectedFeature,
       )
     }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { GeoJSONInterface } from 'utils';
 import { WorkflowSolutions } from './WorkflowSolutions';
 import { WorkflowWorkspace } from './WorkflowWorkspace';
 import { WorkflowStatistics } from './WorkflowStatistics';
@@ -17,8 +17,12 @@ interface WorkflowState {
  * @version 1.0.0
  */
 class Workflow extends React.Component<WorkflowProps, WorkflowState> {
+  private GeoJSONToolkit: GeoJSONInterface;
+
   constructor(props: WorkflowProps) {
     super(props);
+
+    this.GeoJSONToolkit = new GeoJSONInterface();
 
     this.state = {
       solutions: [],
@@ -30,101 +34,61 @@ class Workflow extends React.Component<WorkflowProps, WorkflowState> {
     this.onUpdateSolutionFeatures = this.onUpdateSolutionFeatures.bind(this);
   }
 
+  /**
+   * Loads a list of solutions for the workflow after the initial render
+   */
   componentDidMount() {
-    const solutions: GeoJSON.FeatureCollection[] = [];
-
-    // Load the JSON solutions then update the solution data in the component
     const loadSolutions = async () => {
       try {
-        let solution1 = await import('../../solutions/SE_State_Management_Polygons_1.json');
-        solutions.push(Workflow.processSolutionImport(solution1.default as GeoJSON.FeatureCollection));
-  
-        let solution2 = await import('../../solutions/SE_State_Management_Polygons_2.json');
-        solutions.push(Workflow.processSolutionImport(solution2.default as GeoJSON.FeatureCollection));
-
+        await this.GeoJSONToolkit.importTests();
+        const solutions = this.GeoJSONToolkit.getSolutions();
         this.setState({ solutions });
       } catch (err: any) {
-        console.error("error loading solutions:", err);
+        console.error("loadSolutions error:", err);
+        this.setState({ solutions: [] });
       }
     }
 
     loadSolutions();
   }
 
-  static processSolutionImport(solution: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection {
-    let newSolution: ExtendedFeatureCollection = {
-      id: uuidv4(),
-      type: "FeatureCollection",
-      features: [],
-    };
-    Object.assign(newSolution, solution);
-    
-    for (let feature of newSolution.features) {
-      feature.id = uuidv4()
-      if (feature.properties) {
-        feature.properties['selected'] = false;
-      }
-    }
-
-    return newSolution;
-  }
-
-  onSelectSolution(index: number) {
+  /**
+   * Sets the currently-selected solution
+   * @param {number} index - the index of the selected solution
+   */
+  onSelectSolution(index: number): void {
     this.setState({ selectedSolution: index });
   }
 
-  onUpdateSolutionSelection(featureID: string, action: UpdateAction) {
-    const updatedSolution: ExtendedFeatureCollection = {
-      id: uuidv4(),
-      type: "FeatureCollection",
-      features: [],
-    };
-
-    Object.assign(updatedSolution, this.state.solutions[this.state.selectedSolution]);
-
-    for (let feature of updatedSolution.features) {
-      if (feature.id && featureID === feature.id && feature.properties) {
-        if (feature.properties['selected'] === false) {
-          feature.properties['fillColor'] = [ 63, 191, 63, 100 ];
-        } else {
-          feature.properties['fillColor'] = [ 160, 160, 180, 200 ];
-        }
-        feature.properties['selected'] = !feature.properties['selected'];
-      }
-    }
-
-    const newSolutions: GeoJSON.FeatureCollection[] = [ ...this.state.solutions ];
-    newSolutions[this.state.selectedSolution] = updatedSolution;
-
-    this.setState({ solutions: newSolutions });
+  /**
+   * Callback function to update the selection state of a feature
+   * @param {string} featureID - the feature to update
+   */
+  onUpdateSolutionSelection(featureID: string): void {
+    try {
+      const solutionID = this.state.solutions[this.state.selectedSolution].id;
+      this.GeoJSONToolkit.updateSolution(solutionID, featureID, "UpdateSelection");
+      const newSolutions = this.GeoJSONToolkit.getSolutions();
+      this.setState({ solutions: newSolutions });
+    } catch (err: any) {
+      console.error(err);
+    } 
   }
 
-  onUpdateSolutionFeatures(featureIDs: string[], action: UpdateAction, updatedFeature: GeoJSON.Feature) {
-    const updatedSolution: ExtendedFeatureCollection = {
-      id: uuidv4(),
-      type: "FeatureCollection",
-      features: [],
-    };
-
-    Object.assign(updatedSolution, this.state.solutions[this.state.selectedSolution]);
-
-    const updatedFeatures: GeoJSON.Feature[] = [];
-
-    for (let feature of updatedSolution.features) {
-      if (feature.id && featureIDs.includes(feature.id as string)) {
-        continue;
-      } else {
-        updatedFeatures.push(feature);
-      }
+  /**
+   * Callback function to update the solution with a feature transformation
+   * @param {string[]} featureIDs - the features involved in the transformation
+   * @param {GeoJSON.Feature} updatedFeature - the resultant feature from uniting or intersecting two features
+   */
+  onUpdateSolutionFeatures(featureIDs: string[], updatedFeature: GeoJSON.Feature): void {
+    try {
+      const solutionID = this.state.solutions[this.state.selectedSolution].id;
+      this.GeoJSONToolkit.updateSolution(solutionID, featureIDs, "UpdatePolygons", updatedFeature);
+      const newSolutions = this.GeoJSONToolkit.getSolutions();
+      this.setState({ solutions: newSolutions });
+    } catch (err: any) {
+      console.error(err);
     }
-
-    updatedFeatures.push(updatedFeature);
-    updatedSolution.features = [ ...updatedFeatures ];
-
-    const newSolutions: GeoJSON.FeatureCollection[] = [ ...this.state.solutions ];
-    newSolutions[this.state.selectedSolution] = updatedSolution;
-
-    this.setState({ solutions: newSolutions });
   }
 
   render() {

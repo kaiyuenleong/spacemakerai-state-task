@@ -1,2 +1,2 @@
 export { calculateArea } from './math';
-export { intersectFeatures, unionFeatures } from './geojson';
+export { GeoJSONFeatureInterface, GeoJSONInterface } from './geojson';

@@ -18,7 +18,7 @@ const INITIAL_VIEW_STATE = {
 
 interface WorkflowWorkspaceProps {
   selectedSolution: ExtendedFeatureCollection | undefined;
-  updateSelectedSolution: (featureID: string, action: UpdateAction) => void;
+  updateSelectedSolution: (featureID: string) => void;
 }
 
 interface WorkflowWorkspaceState {
@@ -62,12 +62,14 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
     if (this.props.selectedSolution) {
       const solutionFeature = this.props.selectedSolution.features[0];
       if (solutionFeature) {
-        const solutionFeatureCoordinates = (solutionFeature.geometry as GeoJSON.Polygon).coordinates;
-        if (solutionFeatureCoordinates.length > 0 && solutionFeatureCoordinates[0].length > 0) {
+        const solutionFeatureCoords =
+          solutionFeature.geometry.type === "Polygon" ? solutionFeature.geometry.coordinates :
+          solutionFeature.geometry.type === "MultiPolygon" ? solutionFeature.geometry.coordinates[0] : [];     
+        if (solutionFeatureCoords.length > 0 && solutionFeatureCoords[0].length > 0) {
           this.setState({
             initialViewState: {
-              longitude: solutionFeatureCoordinates[0][0][0],
-              latitude: solutionFeatureCoordinates[0][0][1],
+              longitude: solutionFeatureCoords[0][0][0],
+              latitude: solutionFeatureCoords[0][0][1],
               zoom: 15,
               pitch: 0,
               bearing: 0,
@@ -88,7 +90,7 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
    */
   onDeckClick(info: PickInfo<any>, e: MouseEvent): void {
     if (info.object && info.object.properties) {
-      this.props.updateSelectedSolution(info.object.id, "UpdateSelection");
+      this.props.updateSelectedSolution(info.object.id);
     }
   }
    
