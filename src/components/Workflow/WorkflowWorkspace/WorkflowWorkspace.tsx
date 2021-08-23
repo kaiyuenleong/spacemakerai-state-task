@@ -1,5 +1,5 @@
 import React from 'react';
-import { StaticMap, Popup, ViewportProps, FlyToInterpolator, _MapContext as MapContext } from 'react-map-gl';
+import { StaticMap, ViewportProps, FlyToInterpolator } from 'react-map-gl';
 import { PickInfo, RGBAColor } from 'deck.gl';
 import DeckGL from '@deck.gl/react';
 import { GeoJsonLayer } from '@deck.gl/layers';
@@ -23,11 +23,6 @@ interface WorkflowWorkspaceProps {
 
 interface WorkflowWorkspaceState {
   initialViewState: ViewportProps;
-  contextMenuData: {
-    show: boolean;
-    longitude: number;
-    latitude: number;
-  }
 }
 
 class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, WorkflowWorkspaceState> {
@@ -36,17 +31,10 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
 
     this.state = {
       initialViewState: INITIAL_VIEW_STATE,
-      contextMenuData: {
-        show: false,
-        longitude: 0,
-        latitude: 0,
-      }
     }
 
     this.alignViewToSolution = this.alignViewToSolution.bind(this);
-    this.closeContextMenu = this.closeContextMenu.bind(this);
     this.onDeckClick = this.onDeckClick.bind(this);
-    this.onDeckDrag = this.onDeckDrag.bind(this);
   }
 
   /**
@@ -56,6 +44,10 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
     this.alignViewToSolution();
   }
 
+  /**
+   * Shifts the map's viewbox when another solution is selected
+   * @param {WorkflowWorkspaceProps} prevProps - the previous version of the received props
+   */
   componentDidUpdate(prevProps: WorkflowWorkspaceProps) {
     if (this.props.selectedSolution?.id !== prevProps.selectedSolution?.id) {
       this.alignViewToSolution();
@@ -66,7 +58,7 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
    * If a solution exists and is selected, align the map's view to a
    * coordinate reference in the selected solution's features
    */
-  alignViewToSolution() {
+  alignViewToSolution(): void {
     if (this.props.selectedSolution) {
       const solutionFeature = this.props.selectedSolution.features[0];
       if (solutionFeature) {
@@ -88,26 +80,16 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
     }
   }
 
-  closeContextMenu() {
-    if (this.state.contextMenuData.show) {
-      const contextMenuData = {
-        show: false,
-        longitude: 0,
-        latitude: 0,
-      }
-      this.setState({ contextMenuData });
-    }
-  }
-
-  onDeckClick(info: PickInfo<any>, e: MouseEvent) {
-    this.closeContextMenu();
+  /**
+   * Handles updating the selection states for a solution's features
+   * when a feature is clicked on the map
+   * @param {PickInfo<any>} info - the object picked from clicking the map
+   * @param {MouseEvent} e - the mouse event associated with the click
+   */
+  onDeckClick(info: PickInfo<any>, e: MouseEvent): void {
     if (info.object && info.object.properties) {
       this.props.updateSelectedSolution(info.object.id, "UpdateSelection");
     }
-  }
-
-  onDeckDrag(info: PickInfo<any>, e: MouseEvent) {
-    this.closeContextMenu();
   }
    
   render() {
@@ -134,21 +116,6 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
         },
         getPointRadius: 100,
         getLineWidth: 1,
-        onClick: (info: PickInfo<any>, e: any) => {
-          if (e.rightButton) {
-            // TODO: Implement context menu for union/intersect
-            console.log("rightclicked selected geojson layer:", info, e);
-            this.setState({
-              contextMenuData: {
-                show: true,
-                longitude: info.coordinate ? info.coordinate[0] : 0,
-                latitude: info.coordinate ? info.coordinate[1] : 0,
-              } 
-            });
-            return true;
-          }
-          return false;
-        },
       }),
     ];
 
@@ -159,37 +126,12 @@ class WorkflowWorkspace extends React.Component<WorkflowWorkspaceProps, Workflow
           controller={true}
           layers={layers}
           onClick={this.onDeckClick}
-          onDrag={this.onDeckDrag}
-          ContextProvider={MapContext.Provider}
         >
           <StaticMap mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN} />
-          {this.state.contextMenuData.show && (
-            <Popup
-              longitude={this.state.contextMenuData.longitude}
-              latitude={this.state.contextMenuData.latitude}
-              closeButton={false}
-              anchor="bottom"
-              tipSize={0}
-            >
-              <WorkflowWorkspaceContextMenu />
-            </Popup>
-          )}
         </DeckGL>
       </div>
     ) 
   }
-}
-
-interface WorkflowWorkspaceContextMenuProps {}
-
-function WorkflowWorkspaceContextMenu(props: WorkflowWorkspaceContextMenuProps) {
-  return (
-    <div>
-      <div>Select</div>
-      <div>Union</div>
-      <div>Intersect</div>
-    </div>
-  )
 }
 
 export { WorkflowWorkspace };
