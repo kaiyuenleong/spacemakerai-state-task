@@ -1,4 +1,3 @@
-import React from 'react';
 import { TopBar, Workflow } from "./components";
 import './App.css';
 
