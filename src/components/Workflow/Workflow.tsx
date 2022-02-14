@@ -1,5 +1,5 @@
 import React from 'react';
-import { GeoJSONInterface } from 'utils';
+import { GeoJSONInterface } from 'utilities';
 import { WorkflowSolutions } from './WorkflowSolutions';
 import { WorkflowWorkspace } from './WorkflowWorkspace';
 import { WorkflowStatistics } from './WorkflowStatistics';

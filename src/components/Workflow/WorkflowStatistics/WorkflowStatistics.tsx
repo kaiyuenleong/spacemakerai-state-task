@@ -1,7 +1,7 @@
 import React from 'react';
 import { ReactComponent as UnionIcon } from 'static/unite.svg';
 import { ReactComponent as IntersectIcon } from 'static/intersection.svg';
-import { calculateArea, GeoJSONFeatureInterface } from 'utils';
+import { calculateArea, GeoJSONFeatureInterface } from 'utilities';
 import './styles.css';
 
 interface WorkflowStatisticsProps {
